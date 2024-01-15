@@ -1,7 +1,16 @@
-﻿namespace Application.Abstractions.Messaging
+﻿using SharedKernel;
+
+namespace Application.Abstractions.Messaging
 {
-    public interface ICommandHandler<TCommand>
+    public interface ICommandHandler<in TCommand>
+        where TCommand : ICommand
     {
-        Task Handle(TCommand commnd, CancellationToken cancellation);
+        Task<Result> Handle(TCommand commnd, CancellationToken cancellationToken);
+    }
+
+    public interface ICommandHandler<in TCommand, TResponse>
+        where TCommand : ICommand<TResponse>
+    { 
+        Task<Result<TResponse>> Handle(TCommand command, CancellationToken cancellationToken);
     }
 }
