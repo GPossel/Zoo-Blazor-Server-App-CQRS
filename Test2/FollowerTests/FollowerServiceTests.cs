@@ -81,10 +81,39 @@ namespace Domain.xUnitTests.FollowerTests
 
             await _followerService.StartFollowingAsync(user, followed, default);
 
-            _followerRepositoryMock.Received(1)
+            await _followerRepositoryMock.Received(1)
                 .Insert(Arg.Is<Follower>(f => f.UserId == user.Id &&
                                               f.FollowedId == followed.Id &&
-                                              f.FollowedAt == UtcNow));
+                                              f.FollowedAt == UtcNow), default);
+        }
+
+        [Fact]
+        public async Task UnFollowingAsync_Should_ReturnError_WhenUserNotFound() { }
+
+        [Fact]
+        public async Task UnFollowingAsync_Should_ReturnError_WhenFollowerNotFound() { }
+
+        [Fact]
+        public async Task UnFollowingAsync_Should_ReturnError_WhenFollowingNotExisting() { }
+
+        [Fact]
+        public async Task UnFollowingAsync_Should_ReturnSuccess() { }
+
+        [Fact]
+        public async Task UnFollowingAsync_Should_CallDeleteOnRepository_WhenUnFollowing()
+        {
+            var user = User.Create(Email, Name, hasPublicProfile: true);
+            var followed = User.Create(Email, Name, hasPublicProfile: true);
+            var follower = Follower.Create(user.Id, followed.Id, UtcNow);
+
+            _followerRepositoryMock
+                .GetByUserIdAndFollowerIdAsync(user.Id, followed.Id, default)
+                .Returns(follower);
+
+            await _followerRepositoryMock.Received(1)
+                    .Delete(Arg.Is<Follower>(f => f.UserId == user.Id &&
+                                                  f.FollowedId == followed.Id &&
+                                                  f.FollowedAt == UtcNow), default);
         }
 
     }

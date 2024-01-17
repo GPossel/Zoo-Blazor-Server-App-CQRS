@@ -36,10 +36,28 @@ namespace Domain.Followers
 
             var follower = Follower.Create(user.Id, followed.Id, _dateTimeProvider.UtcNow);
 
-            _followerRepository.Insert(follower);
+            await _followerRepository.Insert(follower, cancellationToken);
 
             return Result.Success();
         }
-            
+
+        public async Task<Result> RemoveFollowingAsync(Guid followingId, CancellationToken cancellationToken)
+        {
+            Follower? following = await _followerRepository.GetByIdAsync(followingId, cancellationToken);
+
+            if (following is null)
+            {
+                return Result.Success();
+            }
+
+            await _followerRepository.Delete(following, cancellationToken);
+            return Result.Success();
+        }
+
+        public async Task<Follower?> FindFollowingAsync(User user, User follower, CancellationToken cancellationToken)
+        {
+            Follower? following = await _followerRepository.GetByUserIdAndFollowerIdAsync(user.Id, follower.Id, cancellationToken);
+            return following;
+        }
     }
 }
