@@ -2,6 +2,8 @@
 using Application.Abstractions.Messaging;
 using Domain.Followers;
 using Domain.Users;
+using Infrastructure.Entities.Followers;
+using Infrastructure.Entities.Users;
 using SharedKernel;
 
 namespace Application.Followers.StartFollowing
@@ -23,21 +25,21 @@ namespace Application.Followers.StartFollowing
 
         public async Task<Result> Handle(UnFollowingCommand command, CancellationToken cancellationToken)
         {
-            User? user = await _userRepository.GetByIdAsync(command.userId, cancellationToken);
+            UserDbo? user = await _userRepository.GetByIdAsync(command.userId, cancellationToken);
 
             if (user is null)
             {
                 return UserErrors.NotFound(command.userId);
             }
 
-            User? follower = await _userRepository.GetByIdAsync(command.followerId, cancellationToken);
+            UserDbo? follower = await _userRepository.GetByIdAsync(command.followerId, cancellationToken);
 
             if (follower is null)
             {
                 return UserErrors.NotFound(command.followerId);
             }
 
-            Follower? following = await _followerService.FindFollowingAsync(user, follower, cancellationToken);
+            FollowerDbo? following = await _followerService.FindFollowingAsync(user, follower, cancellationToken);
 
             if (following is null)
             {

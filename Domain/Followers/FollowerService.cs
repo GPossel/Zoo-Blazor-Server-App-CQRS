@@ -1,4 +1,6 @@
 ﻿using Domain.Users;
+using Infrastructure.Entities.Followers;
+using Infrastructure.Entities.Users;
 using SharedKernel;
 
 namespace Domain.Followers
@@ -15,8 +17,8 @@ namespace Domain.Followers
         }
 
         public async Task<Result> StartFollowingAsync(
-            User user,
-            User followed,
+            UserDbo user,
+            UserDbo followed,
             CancellationToken cancellationToken)
         {
             if (user.Id == followed.Id)
@@ -34,7 +36,7 @@ namespace Domain.Followers
                 return FollowerErrors.AlreadyFollowing;
             }
 
-            var follower = Follower.Create(user.Id, followed.Id, _dateTimeProvider.UtcNow);
+            var follower = Infrastructure.Entities.Followers.FollowerDbo.Create(user.Id, followed.Id, _dateTimeProvider.UtcNow);
 
             await _followerRepository.Insert(follower, cancellationToken);
 
@@ -43,7 +45,7 @@ namespace Domain.Followers
 
         public async Task<Result> RemoveFollowingAsync(Guid followingId, CancellationToken cancellationToken)
         {
-            Follower? following = await _followerRepository.GetByIdAsync(followingId, cancellationToken);
+            FollowerDbo? following = await _followerRepository.GetByIdAsync(followingId, cancellationToken);
 
             if (following is null)
             {
@@ -54,9 +56,9 @@ namespace Domain.Followers
             return Result.Success();
         }
 
-        public async Task<Follower?> FindFollowingAsync(User user, User follower, CancellationToken cancellationToken)
+        public async Task<FollowerDbo?> FindFollowingAsync(UserDbo user, UserDbo follower, CancellationToken cancellationToken)
         {
-            Follower? following = await _followerRepository.GetByUserIdAndFollowerIdAsync(user.Id, follower.Id, cancellationToken);
+            FollowerDbo? following = await _followerRepository.GetByUserIdAndFollowerIdAsync(user.Id, follower.Id, cancellationToken);
             return following;
         }
     }

@@ -1,6 +1,6 @@
 ﻿using SharedKernel;
 
-namespace Domain.Followers
+namespace Infrastructure.Followers
 {
     public sealed record FollowerCreatedDomainEvent(Guid id) : IDomainEvent
     {

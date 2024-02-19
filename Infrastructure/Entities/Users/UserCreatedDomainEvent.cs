@@ -1,6 +1,6 @@
 ﻿using SharedKernel;
 
-namespace Domain.Users
+namespace Infrastructure.Users
 {
     public sealed record UserCreatedDomainEvent(Guid id) : IDomainEvent
     {

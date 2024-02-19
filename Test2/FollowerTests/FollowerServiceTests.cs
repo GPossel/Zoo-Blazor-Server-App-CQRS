@@ -1,8 +1,11 @@
 ﻿using Domain.Followers;
 using Domain.Users;
 using FluentAssertions;
+using Infrastructure.Entities.Users;
+using Infrastructure.Entities.Followers;
 using NSubstitute;
 using SharedKernel;
+using Infrastructure.Users;
 
 namespace Domain.xUnitTests.FollowerTests
 {
@@ -10,8 +13,8 @@ namespace Domain.xUnitTests.FollowerTests
     {
         private readonly FollowerService _followerService;
         private readonly IFollowerRepository _followerRepositoryMock;
-        private static readonly Email Email = Email.Create("test@test.com").Value;
-        private static readonly Name Name = new("John", "Doe");
+        private static readonly EmailDbo Email = EmailDbo.Create("test@test.com").Value;
+        private static readonly NameDbo Name = NameDbo.Create("John", "Doe");
         private static readonly DateTime UtcNow = DateTime.UtcNow;
 
         public FollowerServiceTests()
@@ -25,7 +28,7 @@ namespace Domain.xUnitTests.FollowerTests
         [Fact]
         public async Task StartFollowingAsync_Should_ReturnError_WhenFollowingSameUser()
         {
-            var user = User.Create(Email, Name, hasPublicProfile: false);
+            var user = UserDbo.Create(Email, Name, hasPublicProfile: false);
 
             var result = await _followerService.StartFollowingAsync(user, user, default);
 
@@ -35,8 +38,8 @@ namespace Domain.xUnitTests.FollowerTests
         [Fact]
         public async Task StartFollowingAsync_Should_ReturnError_WhenProfileNonPublic()
         {
-            var user = User.Create(Email, Name, hasPublicProfile: false);
-            var followed = User.Create(Email, Name, hasPublicProfile: false);
+            var user = UserDbo.Create(Email, Name, hasPublicProfile: false);
+            var followed = UserDbo.Create(Email, Name, hasPublicProfile: false);
 
             var result = await _followerService.StartFollowingAsync(user, followed, default);
 
@@ -46,8 +49,8 @@ namespace Domain.xUnitTests.FollowerTests
         [Fact]
         public async Task StartFollowingAsync_Should_ReturnError_WhenIsAlreadyFollowing()
         {
-            var user = User.Create(Email, Name, hasPublicProfile: true);
-            var followed = User.Create(Email, Name, hasPublicProfile: true);
+            var user = UserDbo.Create(Email, Name, hasPublicProfile: true);
+            var followed = UserDbo.Create(Email, Name, hasPublicProfile: true);
 
             _followerRepositoryMock
                 .IsAlreadyFollowingAsync(user.Id, followed.Id, default)
@@ -61,8 +64,8 @@ namespace Domain.xUnitTests.FollowerTests
         [Fact]
         public async Task StartFollowingAsync_Should_ReturnSuccess()
         {
-            var user = User.Create(Email, Name, hasPublicProfile: true);
-            var followed = User.Create(Email, Name, hasPublicProfile: true);
+            var user = UserDbo.Create(Email, Name, hasPublicProfile: true);
+            var followed = UserDbo.Create(Email, Name, hasPublicProfile: true);
 
             var result = await _followerService.StartFollowingAsync(user, followed, default);
 
@@ -72,8 +75,8 @@ namespace Domain.xUnitTests.FollowerTests
         [Fact]
         public async Task StartFollowingAsync_Should_CallInsertOnRepository_WhenFollowerCreated()
         {
-            var user = User.Create(Email, Name, hasPublicProfile: true);
-            var followed = User.Create(Email, Name, hasPublicProfile: true);
+            var user = UserDbo.Create(Email, Name, hasPublicProfile: true);
+            var followed = UserDbo.Create(Email, Name, hasPublicProfile: true);
 
             _followerRepositoryMock
                 .IsAlreadyFollowingAsync(user.Id, followed.Id, default)
@@ -82,7 +85,7 @@ namespace Domain.xUnitTests.FollowerTests
             await _followerService.StartFollowingAsync(user, followed, default);
 
             await _followerRepositoryMock.Received(1)
-                .Insert(Arg.Is<Follower>(f => f.UserId == user.Id &&
+                .Insert(Arg.Is<FollowerDbo>(f => f.UserId == user.Id &&
                                               f.FollowedId == followed.Id &&
                                               f.FollowedAt == UtcNow), default);
         }
@@ -102,16 +105,16 @@ namespace Domain.xUnitTests.FollowerTests
         [Fact]
         public async Task UnFollowingAsync_Should_CallDeleteOnRepository_WhenUnFollowing()
         {
-            var user = User.Create(Email, Name, hasPublicProfile: true);
-            var followed = User.Create(Email, Name, hasPublicProfile: true);
-            var follower = Follower.Create(user.Id, followed.Id, UtcNow);
+            var user = UserDbo.Create(Email, Name, hasPublicProfile: true);
+            var followed = UserDbo.Create(Email, Name, hasPublicProfile: true);
+            var follower = FollowerDbo.Create(user.Id, followed.Id, UtcNow);
 
             _followerRepositoryMock
                 .GetByUserIdAndFollowerIdAsync(user.Id, followed.Id, default)
                 .Returns(follower);
 
             await _followerRepositoryMock.Received(1)
-                    .Delete(Arg.Is<Follower>(f => f.UserId == user.Id &&
+                    .Delete(Arg.Is<FollowerDbo>(f => f.UserId == user.Id &&
                                                   f.FollowedId == followed.Id &&
                                                   f.FollowedAt == UtcNow), default);
         }
